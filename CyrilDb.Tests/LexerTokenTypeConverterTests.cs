@@ -8,15 +8,15 @@ namespace CyrilDb.Tests
         [Test]
         public void FromEnum()
         {
-           var get = LexerTokenConverter.FromEnum(LexerToken.GET);
+           var get = LexerTokenConverter<TokenType>.FromEnum(TokenType.GET);
             Assert.AreEqual(get, "get");
         }
 
         [Test]
         public void ToEnum()
         {
-            var put = LexerTokenConverter.ToEnum("put");
-            Assert.AreEqual(put, LexerToken.PUT);
+            var put = LexerTokenConverter<TokenType>.ToEnum("put");
+            Assert.AreEqual(put, TokenType.PUT);
         }
     }
 }

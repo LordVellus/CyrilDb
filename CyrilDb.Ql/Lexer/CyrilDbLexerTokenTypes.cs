@@ -5,6 +5,54 @@ using System.Reflection;
 
 namespace CyrilDb.Ql.Lexer
 {
+    public enum TokenType : uint
+    {
+        NOT_VALID,
+
+        //  single character tokens
+        LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+        COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+
+        //  one or two character tokens
+        BANG, BANG_EQUAL,
+        EQUAL, EQUAL_EQUAL,
+        GREATER, GREATER_EQUAL,
+        LESS, LESS_EQUAL, AND, OR,
+
+        //  literals
+        IDENTIFIER, STRING, NUMBER,
+
+        //   keywords
+        [LexerToken("var")]
+        VAR,
+        [LexerToken("get")]
+        GET,
+        [LexerToken("put")]
+        PUT,
+        [LexerToken("delete")]
+        DELETE,
+        [LexerToken("where")]
+        WHERE,
+
+        EOF
+    }
+
+    public class Token
+    {
+        public TokenType Type;
+        public string Lexeme;
+        public int Line;
+        public int Column;
+
+        public Token(TokenType inType, string inLexeme, int inLine, int inColumn)
+        {
+            Type = inType;
+            Lexeme = inLexeme;
+            Line = inLine;
+            Column = inColumn;
+        }
+    }
+
     public enum LexerTokenType
     {
         KEYWORD,
@@ -53,9 +101,9 @@ namespace CyrilDb.Ql.Lexer
         RIGHT_PARANTHESIS
     }
 
-    public class LexerTokenConverter
+    public class LexerTokenConverter<T> where T : System.Enum
     {
-        public static string FromEnum(LexerToken inLexerToken)
+        public static string FromEnum(T inLexerToken)
         {
             FieldInfo fi = inLexerToken.GetType().GetField(inLexerToken.ToString());
 
@@ -69,9 +117,9 @@ namespace CyrilDb.Ql.Lexer
             return null;
         }
 
-        public static LexerToken ToEnum(string lexerToken)
+        public static T ToEnum(string lexerToken)
         {
-            var fields = typeof(LexerToken).GetFields();
+            var fields = typeof(T).GetFields();
 
             foreach(var field in fields)
             {
@@ -81,31 +129,12 @@ namespace CyrilDb.Ql.Lexer
                 {
                     if(attributes.First().StringRepresentation.Equals(lexerToken, System.StringComparison.InvariantCultureIgnoreCase))
                     {
-                        return (LexerToken)field.GetValue(null);
+                        return (T)field.GetValue(null);
                     }
                 }
             }
 
-            return LexerToken.ERROR;
-        }
-
-        public static List<LexerToken> AllOperatorTokens()
-        {
-            var lexerTokens = new List<LexerToken>();
-
-           var fields = typeof(LexerToken).GetFields();
-
-            foreach (var field in fields)
-            {
-                var attributes = field.GetCustomAttributes(typeof(OperatorTokenAttribute), false) as OperatorTokenAttribute[];
-
-                if(attributes != null && attributes.Any())
-                {
-                    lexerTokens.Add((LexerToken)field.GetValue(null));
-                }
-            }
-
-            return lexerTokens;
+            return default(T);
         }
     }
 }
